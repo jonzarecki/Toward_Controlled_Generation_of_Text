@@ -9,8 +9,8 @@ index2word = pkl.load(open('models/index2word.pkl', 'r'))
 
 encoder = Encoder(len(word2index), HIDDEN_SIZE, LATENT_SIZE, 2)
 generator = Generator(HIDDEN_SIZE, len(word2index), LATENT_SIZE, CODE_SIZE)
-generator.load_state_dict(pkl.load(open('models/generator.pkl', 'r')))
-encoder.load_state_dict(pkl.load(open('models/encoder.pkl', 'r')))
+generator.load_state_dict(torch.load('models/generator.pkl'))
+encoder.load_state_dict(torch.load('models/encoder.pkl'))
 
 generator_input = Variable(torch.LongTensor([[word2index['<SOS>']] * 1])).transpose(1, 0)
 if USE_CUDA:
