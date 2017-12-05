@@ -1,17 +1,8 @@
-import torch
-import torch.nn as nn
-import torchvision.datasets as dsets
-import torchvision.transforms as transforms
-import matplotlib.pyplot as plt
 import random
-import numpy as np
-from collections import Counter
-import numpy as np
-from keras.preprocessing import sequence
+import torch.nn as nn
 from keras.datasets import imdb
-import torch
 from torch.autograd import Variable
-from torch.optim import Adam
+import cPickle as pkl
 
 from Constants import *
 from Modules import Encoder, Generator, Discriminator
@@ -49,7 +40,6 @@ data = [[vector_to_sent(inst[0]), inst[1]] for inst in zip(x_train, y_train)] \
 # negative = [d for d in data if d[1] == 0]
 # data = random.sample(positive, 1000) + random.sample(negative, 1000)
 
-SEQ_LENGTH = 15
 train = []
 for t in data:
     t0 = t[0]
@@ -85,6 +75,8 @@ def prepare_sequence(seq, to_ix):
 
 flatten = lambda l: [item for sublist in l for item in sublist]
 
+print "Loading data into cuda"
+
 train_x = []
 train_y = []
 code_labels = []
@@ -104,6 +96,7 @@ for tr in train:
         Variable(torch.LongTensor([int(tr[2])])).cuda() if USE_CUDA else Variable(torch.LongTensor([int(tr[2])])))
 
 train_data = list(zip(train_x, train_y, code_labels))
+print "Finished loading data into cuda"
 
 
 def getBatch(batch_size, train_data):
@@ -191,11 +184,8 @@ for step in range(STEP):
 
 torch.save(generator.state_dict(), 'models/generator.pkl')
 torch.save(encoder.state_dict(), 'models/encoder.pkl')
-
-# encoder = Encoder(len(word2index), HIDDEN_SIZE, LATENT_SIZE, 2)
-# generator = Generator(HIDDEN_SIZE, len(word2index), LATENT_SIZE, CODE_SIZE)
-# generator.load_state_dict('models/generator.pkl')
-# encoder.load_state_dict('models/encoder.pkl')
+pkl.dump(word2index, open('models/word2index.pkl',"w+"))
+pkl.dump(index2word, open('models/index2word.pkl',"w+"))
 
 generator_input = Variable(torch.LongTensor([[word2index['<SOS>']] * 1])).transpose(1, 0)
 if USE_CUDA:
