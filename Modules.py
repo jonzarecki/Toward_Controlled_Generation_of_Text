@@ -67,7 +67,7 @@ class Generator(nn.Module):
         for i in range(seq_length):
             _, hidden = self.gru(embedded, hidden)
             score = self.out(hidden.view(hidden.size(0) * hidden.size(1), -1))
-            softmaxed = F.log_softmax(score)
+            softmaxed = F.log_softmax(score, dim=1)
             decode.append(softmaxed)
             _, input = torch.max(softmaxed, 1)
             embedded = self.embedding(input.unsqueeze(1))

@@ -9,21 +9,25 @@ index2word = pkl.load(open('models/index2word.pkl', 'r'))
 
 encoder = Encoder(len(word2index), HIDDEN_SIZE, LATENT_SIZE, 2)
 generator = Generator(HIDDEN_SIZE, len(word2index), LATENT_SIZE, CODE_SIZE)
-generator.load_state_dict(torch.load('models/generator.pkl'))
+print "loading state_dicts, takes some time"
+generator.load_state_dict(torch.load('models/generator.pkl'))  # takes a-lot of time
 encoder.load_state_dict(torch.load('models/encoder.pkl'))
+print "finished loading state_dicts"
 
-generator_input = Variable(torch.LongTensor([[word2index['<SOS>']] * 1])).transpose(1, 0)
-if USE_CUDA:
-    generator_input = generator_input.cuda()
 
-latent = Variable(torch.randn([1, 10])).cuda() if USE_CUDA else Variable(torch.randn([1, 10]))
-code = Variable(torch.randn([1, 2]).uniform_(0, 1)).cuda() if USE_CUDA else Variable(torch.randn([1, 2]).uniform_(0, 1))
-recon = generator(generator_input, latent, code, 15, SEQ_LENGTH, False)
+def generate_random_sent():
+    generator_input = Variable(torch.LongTensor([[word2index['<SOS>']] * 1])).transpose(1, 0)
 
-v, i = torch.max(recon, 1)
+    latent = Variable(torch.randn([1, 10]))
+    code = Variable(torch.randn([1, 2]).uniform_(0, 1))
+    recon = generator(generator_input, latent, code, 15, SEQ_LENGTH, False)
 
-decoded = []
-for t in range(i.size()[0]):
-    decoded.append(index2word[i.data.cpu().numpy()[t] if USE_CUDA else i.data.cpu().numpy()[t]])
+    v, i = torch.max(recon, 1)
 
-print('A: ', ' '.join([i for i in decoded if i != '<PAD>' and i != '<EOS>']) + '\n')
+    decoded = []
+    for t in range(i.size()[0]):
+        decoded.append(index2word[i.data.cpu().numpy()[t]])
+
+    return ' '.join([i for i in decoded if i != '<PAD>' and i != '<EOS>'][1:])
+
+print generate_random_sent()
